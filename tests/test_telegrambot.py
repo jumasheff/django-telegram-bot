@@ -26,6 +26,9 @@ class AuthorFactory(DjangoModelFactory):
     name = Sequence(lambda n: 'author_%d' % n)
 
 class TestBot(testcases.BaseTestBot):
+    def setUp(self):
+        super(TestBot,self).setUp()
+        self.bot.handler_conf = 'tests.bot_handlers'
 
     def test_enable_webhook(self):
         self.assertTrue(self.bot.enabled)
@@ -122,36 +125,56 @@ class TestBotCommands(testcases.BaseTestBot):
                                    }
                            }
 
+    def setUp(self):
+        super(TestBotCommands,self).setUp()
+        self.bot.handler_conf = 'tests.bot_handlers'
+
     def test_start(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         self._test_message_ok(self.start)
 
     def test_unknown(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         self._test_message_ok(self.unknown)
 
     def test_author_list(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         AuthorFactory(name="author_1")
         AuthorFactory(name="author_2")
         self._test_message_ok(self.author_list)
 
     def test_author_inverse_list(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         AuthorFactory(name="author_1")
         AuthorFactory(name="author_2")
         self._test_message_ok(self.author_inverse_list)
 
     def test_author_detail(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         AuthorFactory(name="author1")
         self._test_message_ok(self.author_detail)
 
     def test_author_list_queryset(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         AuthorFactory(name="author_1")
         AuthorFactory(name="author_2")
         self._test_message_ok(self.author_list_query)
 
     def test_author_detail_queryset(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         AuthorFactory(name="author_1")
         self._test_message_ok(self.author_detail_query)
 
     def test_several_commands_from_same_user_and_chat(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         self._test_message_ok(self.start)
         user = self.update.message.from_user
         chat = self.update.message.chat
@@ -170,10 +193,16 @@ class TestBotMessage(testcases.BaseTestBot):
                            }
                    }
 
+    def setUp(self):
+        super(TestBotMessage,self).setUp()
+        self.bot.handler_conf = 'tests.bot_handlers'
+
     def test_message_handler(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         self._test_message_ok(self.any_message)
 
-@override_settings(TELEGRAM_BOT_HANDLERS_CONF='tests.bot_handlers_empty')
+
 class TestBotNoHandlers(testcases.BaseTestBot):
 
     any_message = {'out': {'parse_mode': 'Markdown',
@@ -182,7 +211,13 @@ class TestBotNoHandlers(testcases.BaseTestBot):
                            }
                    }
 
+    def setUp(self):
+        super(TestBotNoHandlers,self).setUp()
+        self.bot.handler_conf = 'tests.bot_handlers_empty'
+
     def test_no_handler(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         self._test_message_no_handler(self.any_message)
 
 
@@ -202,11 +237,19 @@ class TestBotRegex(testcases.BaseTestBot):
                                 }
                         }
 
+    def setUp(self):
+        super(TestBotRegex,self).setUp()
+        self.bot.handler_conf = 'tests.bot_handlers'
+
     def test_regex_handler_match(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         AuthorFactory(name="authorname")
         self._test_message_ok(self.author_name)
 
     def test_regex_handler_not_match(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         AuthorFactory(name="authorname")
         self._test_message_ok(self.author_not_found)
 
@@ -228,11 +271,19 @@ class TestLoginRequiredBotView(testcases.BaseTestBot):
                                             }
                                     }
 
+    def setUp(self):
+        super(TestLoginRequiredBotView,self).setUp()
+        self.bot.handler_conf = 'tests.bot_handlers'
+
     def test_login_required_not_auth(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         AuthorFactory(name="author_1")
         self._test_message_ok(self.author_login_required_not_auth)
 
     def test_login_required_already_auth(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         token = factories.AuthTokenFactory()
         token.save()
         chat, _ = self.chat_get_or_create()
@@ -243,6 +294,8 @@ class TestLoginRequiredBotView(testcases.BaseTestBot):
 
     @override_settings(TELEGRAM_BOT_TOKEN_EXPIRATION='-1')
     def test_login_required_expired_token(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         token = factories.AuthTokenFactory()
         token.save()
         chat, _ = self.chat_get_or_create()
@@ -252,6 +305,8 @@ class TestLoginRequiredBotView(testcases.BaseTestBot):
         self._test_message_ok(self.author_login_required_not_auth)
 
     def chat_get_or_create(self):
+        with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):
+            self.bot.save()
         data = self.update.message.chat.to_dict()
         modelfields = [f.name for f in Chat._meta.get_fields()]
         params = {k: data[k] for k in data.keys() if k in modelfields}
@@ -263,6 +318,10 @@ class TestAuthView(testcases.BaseTestBot):
     user_args = {'username': 'username',
                  'email': 'test@test.com',
                  'password': 'password'}
+
+    def setUp(self):
+        super(TestAuthView,self).setUp()
+        self.bot.handler_conf = 'tests.bot_handlers'
 
     def test_token_creation(self):
         with mock.patch("telegram.bot.Bot.setWebhook", callable=mock.MagicMock()):

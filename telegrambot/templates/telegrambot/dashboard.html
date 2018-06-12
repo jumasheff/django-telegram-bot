@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+</head>
+<body>
+  <table>
+    {% for bot in bots %}
+    <tr>
+      <td>{{ bot.token }}</td>
+      <td>{{ bot.enabled }}</td>
+      <td>{{ bot.DateTimeField }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

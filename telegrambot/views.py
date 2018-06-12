@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from rest_framework.views import APIView
 from telegrambot.serializers import UpdateSerializer
 from telegrambot.models import Bot, AuthToken
@@ -51,4 +52,8 @@ class AuthView(generic.TemplateView):
         if not created and token.expired():
             token.delete()
             token = AuthToken.objects.create(user=user)
-        return token    
+        return token
+
+
+def DashboardView(request):
+    return render(request, 'telegrambot/dashboard.html')

@@ -29,6 +29,8 @@ class Bot(models.Model):
                                              null=True, default=None,
                                              help_text=_('Leave empty if the bot webhook is published at the standard HTTPS port (443).'))
     enabled = models.BooleanField(_('Enable'), default=True)
+    handler_conf = models.CharField(_('Handler Configure'), max_length=100, blank=True,
+                                   null=True, default=None)
     created = models.DateTimeField(_('Date Created'), auto_now_add=True)
     modified = models.DateTimeField(_('Date Modified'), auto_now=True)
 
@@ -46,8 +48,7 @@ class Bot(models.Model):
         return "%s" % (self.user_api.first_name or self.token if self.user_api else self.token)
 
     def handle(self, update):
-        handlerconf = settings.TELEGRAM_BOT_HANDLERS_CONF
-        resolver = HandlerResolver(handlerconf)
+        resolver = HandlerResolver(self.handler_conf)
         try:
             resolver_match = resolver.resolve(update)
         except HandlerNotFound:
